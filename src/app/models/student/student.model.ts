@@ -1,14 +1,13 @@
 import { Schema, model } from 'mongoose';
 import {
-  StudentModel,
   TGuardian,
   TLocalGuardian,
   TStudent,
-  TStudentMethods,
-  TUserName,
+  TStudentModel,
+  TUserName
 } from './student.interface';
 
-const userNameSchema = new Schema<TUserName,StudentModel,TStudentMethods>({
+const userNameSchema = new Schema<TUserName>({
   firstName: {
     type: String,
     required: [true, 'First name is required.'],
@@ -81,7 +80,7 @@ const localGuardianSchema = new Schema<TLocalGuardian>({
   },
 });
 
-const studentSchema = new Schema<TStudent>({
+const studentSchema = new Schema<TStudent,TStudentModel>({
   id: {
     type: String,
     required: true,
@@ -157,9 +156,15 @@ const studentSchema = new Schema<TStudent>({
   },
 });
 
-studentSchema.methods.isUserExists= async function(id:string){
-  const existingUser= await Student.findOne({id});
-  return existingUser;
+// studentSchema.methods.isUserExists= async function(id:string){
+//   const existingUser= await Student.findOne({id});
+//   return existingUser;
+// }
+
+studentSchema.statics.isUserExists=async function(id:string){
+     const existingUser= await Student.findOne({id});
+     return existingUser;
 }
 
-export const Student = model<TStudent,StudentModel>('Student', studentSchema);
+
+export const Student = model<TStudent,TStudentModel>('Student', studentSchema);
