@@ -1,10 +1,12 @@
+import bcrypt from "bcrypt";
 import { Schema, model } from 'mongoose';
+import config from '../../config';
 import {
   TGuardian,
   TLocalGuardian,
   TStudent,
   TStudentModel,
-  TUserName
+  TUserName,
 } from './student.interface';
 
 const userNameSchema = new Schema<TUserName>({
@@ -80,12 +82,16 @@ const localGuardianSchema = new Schema<TLocalGuardian>({
   },
 });
 
-const studentSchema = new Schema<TStudent,TStudentModel>({
+const studentSchema = new Schema<TStudent, TStudentModel>({
   id: {
     type: String,
     required: true,
     unique: true,
     trim: true,
+  },
+  password:{
+    type: String,
+    required: true,
   },
   name: {
     type: userNameSchema,
@@ -95,9 +101,10 @@ const studentSchema = new Schema<TStudent,TStudentModel>({
     type: String,
     enum: {
       values: ['female', 'male', 'other'],
-      message: "Invalid value for {PATH}: {VALUE}. The gender field can only be one of the following: 'male', 'female', or 'other'.",
+      message:
+        "Invalid value for {PATH}: {VALUE}. The gender field can only be one of the following: 'male', 'female', or 'other'.",
     },
-    required:true,
+    required: true,
   },
   dateOfBirth: {
     type: String,
@@ -124,7 +131,8 @@ const studentSchema = new Schema<TStudent,TStudentModel>({
   bloodGroup: {
     type: String,
     enum: ['A+', 'A-', 'AB+', 'AB-', 'B+', 'B-', 'O+', 'O-'],
-    message: "Invalid value for {PATH}: {VALUE}. The blood group field can only be one of the following: 'A+', 'A-', 'AB+', 'AB-', 'B+', 'B-', 'O+', or 'O-'.",
+    message:
+      "Invalid value for {PATH}: {VALUE}. The blood group field can only be one of the following: 'A+', 'A-', 'AB+', 'AB-', 'B+', 'B-', 'O+', or 'O-'.",
   },
   presentAddress: {
     type: String,
@@ -161,10 +169,25 @@ const studentSchema = new Schema<TStudent,TStudentModel>({
 //   return existingUser;
 // }
 
-studentSchema.statics.isUserExists=async function(id:string){
-     const existingUser= await Student.findOne({id});
-     return existingUser;
-}
+// document middleware
+// pre save middleware/hook
+studentSchema.pre('save',async function(next){
+  //hashing password and save into db
+ this.password= await bcrypt.hash(this.password,Number(config.bcrypt_salt_rounds))
+ next();
 
 
-export const Student = model<TStudent,TStudentModel>('Student', studentSchema);
+})
+studentSchema.post('save',function(doc,next){
+  doc.password='';
+  next();
+})
+
+
+
+studentSchema.statics.isUserExists = async function (id: string) {
+  const existingUser = await Student.findOne({ id });
+  return existingUser;
+};
+
+export const Student = model<TStudent, TStudentModel>('Student', studentSchema);

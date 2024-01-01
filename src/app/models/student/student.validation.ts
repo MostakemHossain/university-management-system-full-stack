@@ -25,6 +25,7 @@ const localGuardianValidationSchema = z.object({
 const studentValidationSchema = z.object({
   id: z.string(),
   name: userNameValidationSchema,
+  password:z.string().min(1,{message:"Password is Required"}),
   gender: z.string().refine(isValidGender, {
     message: "Invalid value for {PATH}: {VALUE}. The gender field can only be one of the following: 'male', 'female', or 'other'.",
   }),

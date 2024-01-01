@@ -2,11 +2,11 @@ import { TStudent } from './student.interface';
 import { Student } from './student.model';
 
 const createStudentIntoDB = async (payload: TStudent) => {
-    if( await Student.isUserExists(payload.id)){
-        throw new Error("User Already exists");
-    }
-    const result= await Student.create(payload);
-    return result;
+  if (await Student.isUserExists(payload.id)) {
+    throw new Error('User Already exists');
+  }
+  const result = await Student.create(payload);
+  return result;
 };
 const getAllStudentFromDB = async () => {
   const result = await Student.find();
